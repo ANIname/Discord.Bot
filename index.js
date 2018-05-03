@@ -2,10 +2,10 @@ const Discord = require('discord.js')
 const config  = require('./config')
 const client  = new Discord.Client()
 
-client.on('message', message => {
-  let content = message.content.slice(config.prefix.length).trim().split(/ +/g);
-  let command = content.shift().toLowerCase();
-  let errMess = new Discord.RichEmbed().setColor('#de595b')
+client.on('message', async message => {
+  let content = message.content.slice(config.prefix.length).trim().split(/ +/g)
+  let command = content.shift().toLowerCase()
+  let errMess = new Discord.RichEmbed().setColor(config.embed.colors.error)
 
   if(message.author.bot) return
 
@@ -19,7 +19,8 @@ client.on('message', message => {
     if(message.content.startsWith(config.prefix)) message.delete(1000)
     
     if(command === 'report') {
-      errMess.addField('Пример:', `${config.prefix}report @KiiDii#6791 верни стену!`)
+      let report = new Discord.RichEmbed()
+          errMess.addField('Пример:', `${config.prefix}report @KiiDii#6791 верни стену!`)
 
       if (!member) return message.channel.send(errMess
         .setAuthor('Упомяните участника, на которого хотите отправить репорт', 'https://i.imgur.com/IlnmfPn.png')
@@ -33,15 +34,17 @@ client.on('message', message => {
         .setAuthor('В жалобе должно присутствовать минимум 2 слова', 'https://i.imgur.com/IlnmfPn.png')
       )
 
-      message.channel.send(new Discord.RichEmbed()
+      if (message.attachments.first()) await report.setImage(message.attachments.first().proxyURL)
+
+      message.channel.send(report
         .setAuthor(`Жалоба на участника: "${member.user.tag}", отправлена!`, 'https://i.imgur.com/Ja4wR6v.png')
         .addField('Её текст:', message.content.slice(config.prefix.length + command.length))
+        .setThumbnail(member.user.displayAvatarURL)
         .setColor('#a5ec77')
       )
 
-      message.guild.channels.get('441643791858925598').send(new Discord.RichEmbed()
+      message.guild.channels.get('441643791858925598').send(report
         .setAuthor(`Получена жалоба, на участника: "${member.user.tag}"`, 'https://i.imgur.com/6c5w3HS.png')
-        .addField('Её текст:', message.content.slice(config.prefix.length + command.length))
         .setColor('#e3c375')
       )
 
